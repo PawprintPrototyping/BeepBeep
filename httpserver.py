@@ -30,8 +30,8 @@ def client_response(conn):
             {"success": true}
             """
 
-    conn.send("HTTP/1.1 200 OK\n")
-    conn.send("Content-Type: application/json\n")
-    conn.send("Connection: close\n\n")
+    conn.send_str("HTTP/1.1 200 OK\n")
+    conn.send_str("Content-Type: application/json\n")
+    conn.send_str("Connection: close\n\n")
     conn.sendall(response)
     conn.close()

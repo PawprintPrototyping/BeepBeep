@@ -1,6 +1,7 @@
 """
 Websockets protocol
 """
+import typing
 
 import ulogging
 import ure as re
@@ -8,6 +9,7 @@ import ustruct as struct
 import urandom as random
 import usocket as socket
 from ucollections import namedtuple
+from micropython import const
 
 LOGGER = ulogging.getLogger(__name__)
 
@@ -42,7 +44,7 @@ class ConnectionClosed(Exception):
     pass
 
 
-def urlparse(uri):
+def urlparse(uri: str):
     """Parse ws:// URLs"""
     match = URL_RE.match(uri)
     if match:
@@ -58,9 +60,11 @@ def urlparse(uri):
             if port is None:
                 port = 80
         else:
-            raise ValueError('Scheme {} is invalid'.format(protocol))
+            raise ValueError(f'Scheme {protocol} is invalid')
 
         return URI(protocol, host, int(port), path)
+    else:
+        raise ValueError(f'Invalid URI: {uri}')
 
 
 class Websocket:
@@ -72,10 +76,10 @@ class Websocket:
     """
     is_client = False
 
-    def __init__(self, sock):
-        self.sock = sock
-        self.open = True
-        self.sock.setblocking(False)
+    def __init__(self):
+        self._sock: socket.socket = socket.socket()
+        self.open: bool = True
+        self._sock.setblocking(False)
 
     def __enter__(self):
         return self
@@ -83,20 +87,20 @@ class Websocket:
     def __exit__(self, exc_type, exc, tb):
         self.close()
 
-    def settimeout(self, timeout):
-        self.sock.settimeout(timeout)
+    def settimeout(self, timeout: float) -> None:
+        self._sock.settimeout(timeout)
 
-    def read_frame(self, max_size=None):
+    def read_frame(self) -> typing.Tuple[bool, int, bytes]:
         """
         Read a frame from the socket.
         See https://tools.ietf.org/html/rfc6455#section-5.2 for the details.
         """
 
         # Frame header
-        two_bytes = self.sock.read(2)
+        two_bytes = self._sock.read(2)
 
         if not two_bytes:
-            raise NoDataException
+            raise NoDataException("Frame contains less than 2 bytes")
 
         byte1, byte2 = struct.unpack('!BB', two_bytes)
 
@@ -109,15 +113,16 @@ class Websocket:
         length = byte2 & 0x7f
 
         if length == 126:  # Magic number, length header is 2 bytes
-            length, = struct.unpack('!H', self.sock.read(2))
+            length, = struct.unpack('!H', self._sock.read(2))
         elif length == 127:  # Magic number, length header is 8 bytes
-            length, = struct.unpack('!Q', self.sock.read(8))
+            length, = struct.unpack('!Q', self._sock.read(8))
 
+        mask_bits = 0
         if mask:  # Mask is 4 bytes
-            mask_bits = self.sock.read(4)
+            mask_bits = self._sock.read(4)
 
         try:
-            data = self.sock.read(length)
+            data = self._sock.read(length)
         except MemoryError:
             # We can't receive this many bytes, close the socket
             if __debug__:
@@ -132,7 +137,7 @@ class Websocket:
 
         return fin, opcode, data
 
-    def write_frame(self, opcode, data=b''):
+    def write_frame(self, opcode: int, data: bytes = b'') -> None:
         """
         Write a frame to the socket.
         See https://tools.ietf.org/html/rfc6455#section-5.2 for the details.
@@ -152,29 +157,29 @@ class Websocket:
 
         if length < 126:  # 126 is magic value to use 2-byte length header
             byte2 |= length
-            self.sock.write(struct.pack('!BB', byte1, byte2))
+            self._sock.write(struct.pack('!BB', byte1, byte2))
 
         elif length < (1 << 16):  # Length fits in 2-bytes
             byte2 |= 126  # Magic code
-            self.sock.write(struct.pack('!BBH', byte1, byte2, length))
+            self._sock.write(struct.pack('!BBH', byte1, byte2, length))
 
         elif length < (1 << 64):
             byte2 |= 127  # Magic code
-            self.sock.write(struct.pack('!BBQ', byte1, byte2, length))
+            self._sock.write(struct.pack('!BBQ', byte1, byte2, length))
 
         else:
             raise ValueError()
 
         if mask:  # Mask is 4 bytes
             mask_bits = struct.pack('!I', random.getrandbits(32))
-            self.sock.write(mask_bits)
+            self._sock.write(mask_bits)
 
             data = bytes(b ^ mask_bits[i % 4]
                          for i, b in enumerate(data))
 
-        self.sock.write(data)
+        self._sock.write(data)
 
-    def recv(self):
+    def recv(self) -> typing.Union[bytes, str, None]:
         """
         Receive data from the websocket.
 
@@ -183,7 +188,8 @@ class Websocket:
         If you don't call recv() sufficiently often you won't process control
         frames.
         """
-        assert self.open
+        if not self.open:
+            raise ConnectionClosed("Unable to receive data, connection is closed")
 
         while self.open:
             try:
@@ -221,22 +227,19 @@ class Websocket:
             else:
                 raise ValueError(opcode)
 
-    def send(self, buf):
-        """Send data to the websocket."""
+    def send_str(self, buf: str) -> None:
+        """Send a string to the websocket."""
+        if not self.open:
+            raise ConnectionClosed()
+        self.write_frame(OP_TEXT, buf.encode('utf-8'))
 
-        assert self.open
+    def send_bytes(self, buf: bytes) -> None:
+        """Send raw bytes to the websocket"""
+        if not self.open:
+            raise ConnectionClosed()
+        self.write_frame(OP_BYTES, buf)
 
-        if isinstance(buf, str):
-            opcode = OP_TEXT
-            buf = buf.encode('utf-8')
-        elif isinstance(buf, bytes):
-            opcode = OP_BYTES
-        else:
-            raise TypeError()
-
-        self.write_frame(opcode, buf)
-
-    def close(self, code=CLOSE_OK, reason=''):
+    def close(self, code: int = CLOSE_OK, reason: str = '') -> None:
         """Close the websocket."""
         if not self.open:
             return
@@ -246,8 +249,8 @@ class Websocket:
         self.write_frame(OP_CLOSE, buf)
         self._close()
 
-    def _close(self):
+    def _close(self) -> None:
         if __debug__:
             LOGGER.debug("Connection closed")
         self.open = False
-        self.sock.close()
+        self._sock.close()
