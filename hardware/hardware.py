@@ -12,6 +12,7 @@ from ulcdscreen import LcdScreen
 from .buzzer import Buzzer
 from .status_led import SimpleStatusLed, NeopixelStatusLed
 from .lock import Lock, SimpleLock
+from .card_reader import CardReader
 
 ulogging.basicConfig(level=config.LOG_LEVEL)
 logger = ulogging.getLogger("hardware")
@@ -41,7 +42,9 @@ class Hardware:
             aux_1_pin: typing.Optional[Pin],
             aux_2_pin: typing.Optional[Pin],
             door: typing.Optional[Lock],
-            relay: typing.Optional[SimpleLock]
+            relay: typing.Optional[SimpleLock],
+            card_reader: CardReader,
+            device_type: DeviceType
     ):
         self.buzzer: typing.Optional[Buzzer] = buzzer
         self.rgb_status_led: typing.Optional[NeopixelStatusLed] = rgb_status_led
@@ -54,6 +57,8 @@ class Hardware:
         self.aux_2_pin: typing.Optional[Pin] = aux_2_pin
         self.door: typing.Optional[Lock] = door
         self.relay: typing.Optional[SimpleLock] = relay
+        self.card_reader: CardReader = card_reader
+        self.device_type: DeviceType = device_type
 
 
     @property

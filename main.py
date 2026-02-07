@@ -56,7 +56,7 @@ door_opened_time = None
 # setup RFID
 if config.WIEGAND_ENABLED:
     # setup wiegand reader
-    import uwiegand
+    from hardware.card_reader import uwiegand
 
     rfid_reader = uwiegand.Wiegand(
         config.WIEGAND_ZERO,

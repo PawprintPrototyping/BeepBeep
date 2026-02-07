@@ -4,3 +4,9 @@
 [submodule "micropython-i2c-lcd"]
 	path = micropython-i2c-lcd
 	url = https://github.com/brainelectronics/micropython-i2c-lcd.git
+[submodule "hardware/card_reader/uwiegand"]
+	path = hardware/card_reader/uwiegand
+	url = https://github.com/membermatters/uwiegand.git
+[submodule "hardware/card_reader/urdm6300"]
+	path = hardware/card_reader/urdm6300
+	url = https://github.com/membermatters/urdm6300.git
