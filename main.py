@@ -1,11 +1,11 @@
 import network
 import config
 import ulogging
-import time, utime
+import time
 from machine import reset
 import ubinascii
 import json
-from uwebsockets.client import WebsocketClient
+from networking.uwebsockets import WebsocketClient
 import hardware
 import utils
 import gc

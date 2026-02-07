@@ -9,8 +9,8 @@
 /urdm6300/.git/
 /urdm6300/.git
 /uwiegand/.DS_Store
-/uwebsockets/.DS_Store
-/urequests/.DS_Store
+/networking/uwebsockets/.DS_Store
+/networking/urequests/.DS_Store
 /uos/.DS_Store
 /uologging/.DS_Store
 mpbridge.ignore
@@ -26,7 +26,7 @@ PROTOCOL.md
 README.md
 .gitignore
 .gitmodules
-urequests/LICENSE
+networking/urequests/LICENSE
 micropython-i2c-lcd/.github/
 micropython-i2c-lcd/docs/
 micropython-i2c-lcd/examples/
