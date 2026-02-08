@@ -1,5 +1,3 @@
-from configuration.base import *
-
 # =========================================================================
 # ============================== WARNING! =================================
 # =========================================================================
@@ -10,14 +8,15 @@ from configuration.base import *
 # =========================================================================
 # ========================== General Settings =============================
 # =========================================================================
-DEVICE_TYPE = "memberbucks"  # "door", "interlock" or "memberbucks"
+DEVICE_TYPE = "interlock"  # "door", "interlock" or "memberbucks"
 LOCK_REVERSED = False
 RELAY_REVERSED = False
+IN_1_REVERSED = True
+FIXED_UNLOCK_DELAY = 7  # seconds to remain unlocked
 
 # =========================================================================
-# ========================== Vending Settings =============================
+# ====================== Remote Interlock Settings ========================
 # =========================================================================
-VEND_PRICE = 250  # price in cents to debit an account
-# None, "hold" or "toggle" - None disable, hold until the accept coins signal is ready, toggle will hold for VEND_TOGGLE_TIME (s)
-VEND_MODE = "hold"
-VEND_TOGGLE_TIME = 1
+TASMOTA_HOST = "192.168.2.61"  # set to None or the IP of the TASMOTA switching device to enable remote control
+TASMOTA_USER = "admin"
+TASMOTA_PASSWORD = "admin"

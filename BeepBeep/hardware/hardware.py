@@ -1,8 +1,8 @@
 import typing
 import config
 import time
-import ulogging
-from networking import urequests
+from .. import ulogging
+from BeepBeep.networking import urequests
 
 from enum import Enum
 

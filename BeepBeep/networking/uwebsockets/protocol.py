@@ -3,7 +3,7 @@ Websockets protocol
 """
 import typing
 
-import ulogging
+from BeepBeep import ulogging
 import ure as re
 import ustruct as struct
 import urandom as random
@@ -129,7 +129,7 @@ class Websocket:
                 LOGGER.debug("Frame of length %s too big. Closing",
                              length)
             self.close(code=CLOSE_TOO_BIG)
-            return True, OP_CLOSE, None
+            return True, OP_CLOSE, b''
 
         if mask:
             data = bytes(b ^ mask_bits[i % 4]

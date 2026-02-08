@@ -7,7 +7,6 @@ import ubinascii
 import json
 from networking.uwebsockets import WebsocketClient
 import hardware
-import utils
 import gc
 
 if config.ENABLE_BACKUP_HTTP_SERVER:
@@ -383,7 +382,7 @@ def print_device_standby_message():
         hardware.lcd.clear()
         if sta_if.isconnected():
             if config.DEVICE_TYPE == "memberbucks":
-                hardware.lcd.print(f"${config.VEND_PRICE/100} Swipe Card")
+                hardware.lcd.print(f"${config.VEND_PRICE / 100} Swipe Card")
             else:
                 hardware.lcd.print("Swipe To Unlock!")
         else:
@@ -413,7 +412,7 @@ def lock_door():
     global waiting_for_door_open_time
 
     waiting_for_door_open_time = None
-    hardware.lock()
+    BeepBeep.hardware.lock()
     hardware.relay_off()
     logger.warn("Locked!")
     print_device_standby_message()
@@ -612,7 +611,7 @@ while True:
                         if config.DEVICE_TYPE == "interlock":
                             interlock_end_session()
                         else:
-                            hardware.lock()
+                            BeepBeep.hardware.lock()
                             hardware.buzz_action()
                         hardware.rgb_led_set(hardware.RGB_OFF)
                         reset()
@@ -658,7 +657,7 @@ while True:
                     elif data.get("command") == "lock":
                         if config.DEVICE_TYPE == "door":
                             logger.info("Locking device from manual request!")
-                            hardware.lock()
+                            BeepBeep.hardware.lock()
 
                         elif config.DEVICE_TYPE == "interlock":
                             logger.info("Turning off interlock from manual request!")
