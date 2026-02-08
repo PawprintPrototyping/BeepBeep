@@ -13,8 +13,8 @@ from BeepBeep.config_utils import pull_int_from_config, pull_bool_from_config, p
 from BeepBeep.hardware.ulcdscreen import LcdScreen
 from machine import WDT, Pin, I2C, UART
 
-ulogging.basicConfig(level=config.LOG_LEVEL)
-logger = ulogging.getLogger("hardware_config")
+ulogging.basic_config(level=config.LOG_LEVEL)
+logger = ulogging.get_logger("hardware_config")
 
 def handle_card_reader(config_json: typing.Dict) -> CardReader:
     if "card_reader" not in config_json:

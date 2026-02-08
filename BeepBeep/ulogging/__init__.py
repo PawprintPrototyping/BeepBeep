@@ -1,3 +1,4 @@
+import typing
 import utime
 import sys
 import uio
@@ -18,14 +19,14 @@ _level_dict = {
 }
 
 
-_nameToLevel = {v: k for k, v in _level_dict.items()}
+_name_to_level = {v: k for k, v in _level_dict.items()}
 
 
-def addLevelName(level, name):
+def add_level_name(level, name):
     _level_dict[level] = name
 
 
-def getLevelName(lvl):
+def get_level_name(lvl):
     return _level_dict[lvl]
 
 
@@ -44,10 +45,10 @@ class Logger:
             return l
         return "LVL%s" % level
 
-    def setLevel(self, level):
+    def set_level(self, level: int):
         self.level = level
 
-    def isEnabledFor(self, level):
+    def is_enabled_for(self, level):
         return level >= self.level
 
     def log(self, level, msg, *args):
@@ -91,13 +92,13 @@ class Logger:
     def exception(self, msg, *args):
         self.exc(sys.exc_info()[1], msg, *args)
 
-    def addHandler(self, hdlr):
+    def add_handler(self, hdlr):
         if self.handlers is ():
             self.handlers = []
         self.handlers.append(hdlr)
 
 
-def getLogger(name=None):
+def get_logger(name: str = None):
     if name is None:
         name = "root"
     if name in _loggers:
@@ -110,50 +111,52 @@ def getLogger(name=None):
 
 
 def info(msg, *args):
-    getLogger(None).info(msg, *args)
+    get_logger(None).info(msg, *args)
 
 
 def debug(msg, *args):
-    getLogger(None).debug(msg, *args)
+    get_logger(None).debug(msg, *args)
 
 
 def warning(msg, *args):
-    getLogger(None).warning(msg, *args)
+    get_logger(None).warning(msg, *args)
 
 
 warn = warning
 
 
 def error(msg, *args):
-    getLogger(None).error(msg, *args)
+    get_logger(None).error(msg, *args)
 
 
 def critical(msg, *args):
-    getLogger(None).critical(msg, *args)
+    get_logger(None).critical(msg, *args)
 
 
 def exception(msg, *args):
-    getLogger(None).exception(msg, *args)
+    get_logger(None).exception(msg, *args)
 
 
-def basicConfig(level=INFO, filename=None, stream=None, format=None, style="%"):
-    root.setLevel(level)
+def basic_config(level: typing.Union[int, str] = INFO, filename: str = None, stream=None, format: str = None, style: str = "%"):
+    if isinstance(level, str):
+        level = _name_to_level[level]
+    root.set_level(level)
     if filename:
         h = FileHandler(filename)
     else:
         h = StreamHandler(stream)
-    h.setFormatter(
+    h.set_formatter(
         Formatter(format or "%(levelname)s:%(name)s:%(message)s", style=style)
     )
     root.handlers.clear()
-    root.addHandler(h)
+    root.add_handler(h)
 
 
 class Handler:
     def __init__(self):
         self.formatter = Formatter()
 
-    def setFormatter(self, fmt):
+    def set_formatter(self, fmt):
         self.formatter = fmt
 
 
@@ -208,7 +211,7 @@ class Formatter:
 
         self.style = style
 
-    def usesTime(self):
+    def uses_time(self):
         if self.style == "%":
             return "%(asctime)" in self.fmt
         elif self.style == "{":
@@ -220,14 +223,14 @@ class Formatter:
 
         # If the formatting string contains '(asctime)', formatTime() is called to
         # format the event time.
-        if self.usesTime():
-            record.asctime = self.formatTime(record, self.datefmt)
+        if self.uses_time():
+            record.asctime = self.format_time(record, self.datefmt)
 
         # If there is exception information, it is formatted using formatException()
         # and appended to the message. The formatted exception information is cached
         # in attribute exc_text.
         if record.exc_info is not None:
-            record.exc_text += self.formatException(record.exc_info)
+            record.exc_text += self.format_exception(record.exc_info)
             record.message += "\n" + record.exc_text
 
         # The record’s attribute dictionary is used as the operand to a string
@@ -241,15 +244,15 @@ class Formatter:
                 "Style {0} is not supported by logging.".format(self.style)
             )
 
-    def formatTime(self, record, datefmt=None):
+    def format_time(self, record, datefmt=None):
         assert datefmt is None  # datefmt is not supported
         ct = utime.localtime(record.created)
         return "{0}-{1}-{2} {3}:{4}:{5}".format(*ct)
 
-    def formatException(self, exc_info):
+    def format_exception(self, exc_info):
         raise NotImplementedError()
 
-    def formatStack(self, stack_info):
+    def format_stack(self, stack_info):
         raise NotImplementedError()
 
 
@@ -273,8 +276,8 @@ class LogRecord:
 
 
 root = Logger("root")
-root.setLevel(WARNING)
+root.set_level(WARNING)
 sh = StreamHandler()
 sh.formatter = Formatter()
-root.addHandler(sh)
+root.add_handler(sh)
 _loggers = {"root": root}

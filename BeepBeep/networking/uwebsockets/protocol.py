@@ -3,7 +3,7 @@ Websockets protocol
 """
 import typing
 
-from BeepBeep import ulogging
+import ulogging
 import ure as re
 import ustruct as struct
 import urandom as random
@@ -11,7 +11,7 @@ import usocket as socket
 from ucollections import namedtuple
 from micropython import const
 
-LOGGER = ulogging.getLogger(__name__)
+LOGGER = ulogging.get_logger(__name__)
 
 # Opcodes
 OP_CONT = const(0x0)

@@ -12,8 +12,8 @@ import gc
 if config.ENABLE_BACKUP_HTTP_SERVER:
     import httpserver
 
-ulogging.basicConfig(level=config.LOG_LEVEL)
-logger = ulogging.getLogger("main")
+ulogging.basic_config(level=config.LOG_LEVEL)
+logger = ulogging.get_logger("main")
 
 hardware.buzzer_off()
 hardware.rgb_led_set(hardware.RGB_OFF)

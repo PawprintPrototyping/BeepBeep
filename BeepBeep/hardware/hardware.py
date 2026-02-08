@@ -13,15 +13,10 @@ from .buzzer import Buzzer
 from .status_led import SimpleStatusLed, NeopixelStatusLed
 from .lock import Lock, SimpleLock
 from .card_reader import CardReader
+from .device_types import DeviceType
 
-ulogging.basicConfig(level=config.LOG_LEVEL)
-logger = ulogging.getLogger("hardware")
-
-
-class DeviceType(Enum):
-    door = "door"
-    interlock = "interlock"
-    vend = "vend"
+ulogging.basic_config(level=config.LOG_LEVEL)
+logger = ulogging.get_logger("hardware")
 
 
 class Hardware:

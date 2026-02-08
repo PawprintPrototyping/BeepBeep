@@ -2,8 +2,8 @@ import usocket
 import ulogging
 import config
 
-ulogging.basicConfig(level=config.LOG_LEVEL)
-logger = ulogging.getLogger("httpserver")
+ulogging.basic_config(level=config.LOG_LEVEL)
+logger = ulogging.get_logger("httpserver")
 
 sock = None
 

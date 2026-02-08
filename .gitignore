@@ -134,5 +134,6 @@ dmypy.json
 state.json
 tags.json
 config.py
-BeepBeep/configuration/network_config.json
+BeepBeep/configuration/network.json
 BeepBeep/configuration/hardware.json
+BeepBeep/configuration/general.json
