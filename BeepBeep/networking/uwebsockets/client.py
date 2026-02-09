@@ -16,6 +16,7 @@ from networking.uwebsockets.protocol import Websocket, urlparse, URI
 
 logger = ulogging.get_logger("websocket")
 
+
 class WebsocketClient(Websocket):
     is_client = True
 
@@ -27,7 +28,7 @@ class WebsocketClient(Websocket):
     def _send_header(self, header_data: bytes, *args) -> None:
         self._sock.write(header_data % args + "\r\n")
 
-    def connect(self, local_ip: str) -> None:
+    def connect(self, local_ip: str) -> bool:
         """
         Connect a websocket.
         """
@@ -75,6 +76,14 @@ class WebsocketClient(Websocket):
         self.send_str(json.dumps(auth_packet))
         ip_packet = {"command": "ip_address", "ip_address": local_ip}
         self.send_str(json.dumps(ip_packet))
+        auth_response = json.loads(self.recv())
+        logger.debug(f"Membermatters says {auth_response}")
+        if auth_response["authorised"]:
+            logger.info("Successfully authenticated with MemberMatters")
+            return True
+        else:
+            logger.error("Authentication failed with MemberMatters. Check your API key and endpoint")
+        return False
 
     @property
     def connected(self) -> bool:

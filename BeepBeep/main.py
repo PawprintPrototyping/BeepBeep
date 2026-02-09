@@ -22,6 +22,7 @@ def connect_to_network():
         logger.error(f"Unable to connect to {WIFI.ssid}")
     logger.info("Connecting to websocket...")
     WEBSOCKET.connect(local_ip=WIFI.local_ip)
+    logger.debug(f"{WEBSOCKET.recv()}")
     logger.info("Connected to websocket")
 
 def test_websocket():
