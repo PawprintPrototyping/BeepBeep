@@ -16,11 +16,33 @@ def init_logging():
 def connect_to_network():
     logger.info("Connecting to wifi...")
     WIFI.connect_wifi()
-    logger.info(f"Connected? {WIFI.connected}")
-    WEBSOCKET.connect()
+    if WIFI.connected:
+        logger.info(f"Connected to {WIFI.ssid}")
+    else:
+        logger.error(f"Unable to connect to {WIFI.ssid}")
+    logger.info("Connecting to websocket...")
+    WEBSOCKET.connect(local_ip=WIFI.local_ip)
+    logger.info("Connected to websocket")
+
+def test_websocket():
+    if not WEBSOCKET.connected:
+        logger.error("Websocket not connected")
+    interlock_packet = {
+           "command": "interlock_session_start",
+            "card_id": "0xdeadbeef",
+        }
+    WEBSOCKET.send_str(json.dumps(interlock_packet))
+    interlock_packet = {
+        "command": "interlock_session_end",
+        "session_id": 0,
+        "session_kwh": 1,
+        "card_id": 0xdeadbeef,
+    }
+    WEBSOCKET.send_str(json.dumps(interlock_packet))
 
 def main():
     init_logging()
     connect_to_network()
+    test_websocket()
 
 main()

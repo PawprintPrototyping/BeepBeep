@@ -40,3 +40,7 @@ class WifiConnection:
     @property
     def connected(self) -> bool:
         return self.sta_if.isconnected()
+
+    @property
+    def ssid(self) -> str:
+        return self._ssid

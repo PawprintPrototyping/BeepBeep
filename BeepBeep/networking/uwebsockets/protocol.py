@@ -78,7 +78,7 @@ class Websocket:
 
     def __init__(self):
         self._sock: socket.socket = socket.socket()
-        self.open: bool = True
+        self.open: bool = False
         self._sock.setblocking(False)
 
     def __enter__(self):
@@ -199,7 +199,7 @@ class Websocket:
             except ValueError:
                 LOGGER.debug("Failed to read frame. Socket dead.")
                 self._close()
-                raise ConnectionClosed()
+                raise ConnectionClosed("Failed to read frame, socket is dead")
 
             if not fin:
                 raise NotImplementedError()
@@ -209,6 +209,7 @@ class Websocket:
             elif opcode == OP_BYTES:
                 return data
             elif opcode == OP_CLOSE:
+                LOGGER.debug("Remote told us to close the connection, got opcode OP_CLOSE")
                 self._close()
                 return
             elif opcode == OP_PONG:
@@ -230,13 +231,13 @@ class Websocket:
     def send_str(self, buf: str) -> None:
         """Send a string to the websocket."""
         if not self.open:
-            raise ConnectionClosed()
+            raise ConnectionClosed(f"Cannot send {buf}, connection is closed")
         self.write_frame(OP_TEXT, buf.encode('utf-8'))
 
     def send_bytes(self, buf: bytes) -> None:
         """Send raw bytes to the websocket"""
         if not self.open:
-            raise ConnectionClosed()
+            raise ConnectionClosed(f"Cannot send {buf}, connection is closed")
         self.write_frame(OP_BYTES, buf)
 
     def close(self, code: int = CLOSE_OK, reason: str = '') -> None:
@@ -250,7 +251,6 @@ class Websocket:
         self._close()
 
     def _close(self) -> None:
-        if __debug__:
-            LOGGER.debug("Connection closed")
+        LOGGER.debug("Closing the connection")
         self.open = False
         self._sock.close()

@@ -27,7 +27,7 @@ class WebsocketClient(Websocket):
     def _send_header(self, header_data: bytes, *args) -> None:
         self._sock.write(header_data % args + "\r\n")
 
-    def connect(self) -> None:
+    def connect(self, local_ip: str) -> None:
         """
         Connect a websocket.
         """
@@ -40,6 +40,7 @@ class WebsocketClient(Websocket):
         self._sock.connect(addr[0][4])
         if self._endpoint.protocol == "wss":
             self._sock = ssl.wrap_socket(self._sock, server_hostname=self._endpoint.hostname)
+        self.open = True
 
         # Sec-WebSocket-Key is 16 bytes of random base64 encoded
         key = binascii.b2a_base64(bytes(random.getrandbits(8) for _ in range(16)))[:-1]
@@ -71,7 +72,10 @@ class WebsocketClient(Websocket):
             "secret_key": f"{self._api_key}"
         }
         logger.debug("Authenticating...")
-        self.send_bytes(json.dumps(auth_packet).encode())
-        logger.debug("Waiting for response...")
-        response = self.recv()
-        logger.debug(f"{response}")
+        self.send_str(json.dumps(auth_packet))
+        ip_packet = {"command": "ip_address", "ip_address": local_ip}
+        self.send_str(json.dumps(ip_packet))
+
+    @property
+    def connected(self) -> bool:
+        return self.open
