@@ -199,11 +199,11 @@ class Websocket:
             except ValueError:
                 LOGGER.debug("Failed to read frame. Socket dead.")
                 self._close()
-                raise ConnectionClosed("Failed to read frame, socket is dead")
-
-            if not fin:
-                raise NotImplementedError()
-
+                return None
+            except OSError:
+                LOGGER.debug("Failed to connect to socket, socket is dead")
+                self._close()
+                return None
             if opcode == OP_TEXT:
                 return data.decode('utf-8')
             elif opcode == OP_BYTES:
@@ -211,7 +211,7 @@ class Websocket:
             elif opcode == OP_CLOSE:
                 LOGGER.debug("Remote told us to close the connection, got opcode OP_CLOSE")
                 self._close()
-                return
+                return None
             elif opcode == OP_PONG:
                 # Ignore this frame, keep waiting for a data frame
                 continue
@@ -227,6 +227,7 @@ class Websocket:
                 raise NotImplementedError(opcode)
             else:
                 raise ValueError(opcode)
+        return None
 
     def send_str(self, buf: str) -> None:
         """Send a string to the websocket."""
